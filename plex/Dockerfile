@@ -26,9 +26,6 @@ RUN chmod u+x  /start.sh
 
 ADD ./supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-ENV RUN_AS_ROOT="false" \
-    CHANGE_DIR_RIGHTS="false"
-
 RUN useradd -u 2000 xmedia
 
 EXPOSE 32400
