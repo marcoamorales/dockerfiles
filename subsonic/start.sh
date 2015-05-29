@@ -2,6 +2,9 @@
 
 set -e
 
+SUBSONIC_USER=subsonic
+SUBSONIC_USER_UID=2001
+
 if [ $SUBSONIC_USER ]; then
   if [ $SUBSONIC_USER_UID ]; then
     useradd -u $SUBSONIC_USER_UID $SUBSONIC_USER
