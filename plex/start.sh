@@ -1,7 +1,5 @@
 #!/bin/bash -eux
 
-useradd -u 2000 xmedia
-
 mkdir -p /config/logs/supervisor
 
 touch /supervisord.log
