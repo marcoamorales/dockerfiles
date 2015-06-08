@@ -1,23 +1,40 @@
-FROM ubuntu:trusty
+FROM debian:wheezy
 
-ENV LANG en_US.UTF-8
+MAINTAINER michael@schuerig.de
 
-RUN apt-get update -q && \
-    apt-get install -qy openjdk-7-jre-headless
+ENV DEBIAN_FRONTEND noninteractive
 
-ADD https://downloads.sourceforge.net/project/subsonic/subsonic/5.2.1/subsonic-5.2.1.deb /tmp/subsonic.deb
-RUN dpkg -i /tmp/subsonic.deb && \
-    rm -rf /tmp/subsonic.deb
+# Create a new user account with UID/GID at least 10000.
+# This makes it easier to keep host and docker accounts apart.
+RUN useradd --home /var/xmedia -u 2000 -M xmedia && \
+    mkdir -p /var/xmedia && chown xmedia /var/xmedia && chmod 0770 /var/xmedia
 
-# Don't fork to the background
-RUN sed -i "s/ > \${LOG} 2>&1 &//" /usr/share/subsonic/subsonic.sh
-RUN sed -i "s/SUBSONIC_HTTPS_PORT=0/SUBSONIC_HTTPS_PORT=4443/" /usr/share/subsonic/subsonic.sh
-RUN sed -i "s/SUBSONIC_HOME=\/var\/subsonic/SUBSONIC_HOME=\/conf/" /usr/share/subsonic/subsonic.sh
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+    apt-get update && \
+    apt-get dist-upgrade --yes --no-install-recommends --no-install-suggests && \
+    apt-get install --yes --no-install-recommends --no-install-suggests openjdk-7-jre-headless locales && \
+    apt-get clean
 
-ADD start.sh /start.sh
-RUN chmod +x /start.sh
+ENV SUBSONIC_VERSION 5.2.1
 
-VOLUME ["/data", "/conf"]
-EXPOSE 4443
+ADD http://downloads.sourceforge.net/project/subsonic/subsonic/$SUBSONIC_VERSION/subsonic-$SUBSONIC_VERSION.deb?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fsubsonic%2Ffiles%2Fsubsonic%2F$SUBSONIC_VERSION%2F&ts=1421842428&use_mirror=optimate /tmp/subsonic-$SUBSONIC_VERSION.deb
+RUN dpkg -i /tmp/subsonic-$SUBSONIC_VERSION.deb && rm -f /tmp/*.deb
 
-ENTRYPOINT [ "/start.sh" ]
+# Create hardlinks to the transcoding binaries.
+# This way we can mount a volume over /var/subsonic.
+# Apparently, Subsonic does not accept paths in the Transcoding settings.
+# If you mount a volume over /var/subsonic, create symlinks
+# <host-dir>/var/subsonic/transcode/ffmpeg -> /usr/local/bin/ffmpeg
+# <host-dir>/var/subsonic/transcode/lame -> /usr/local/bin/lame
+#RUN ln /var/subsonic/transcode/ffmpeg /var/subsonic/transcode/lame /usr/local/bin
+
+VOLUME /config
+
+COPY startup.sh /startup.sh
+
+EXPOSE 4040 4443
+
+USER xmedia
+
+CMD []
+ENTRYPOINT ["/startup.sh"]
