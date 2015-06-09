@@ -34,7 +34,13 @@ COPY startup.sh /startup.sh
 
 EXPOSE 4040 4443
 
+RUN locale-gen en_US.UTF-8
+
 USER xmedia
+
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 CMD []
 ENTRYPOINT ["/startup.sh"]
