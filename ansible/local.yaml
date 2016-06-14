@@ -1,0 +1,14 @@
+---
+- hosts: 127.0.0.1
+  tasks:
+  - name: plex docker
+    docker:
+      name: plex
+      image: marcoamorales/plex
+      #image: 736413df55df
+      state: started
+      volumes:
+      - "/home/marco/tmp/conf.d/plex:/config"
+      - "/home/marco/tmp/videos:/data"
+      ports:
+      - '32400:32400'

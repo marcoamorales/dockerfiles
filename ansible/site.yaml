@@ -1,0 +1,17 @@
+---
+- hosts: htpc
+  remote_user: marco
+  tasks:
+  - name: plex docker
+    docker:
+      docker_api_version: 1.21
+      name: plex
+      image: "marcoamorales/plex"
+      pull: always
+      state: reloaded
+      volumes:
+      - "/data/conf.d/plex:/config"
+      - "/data/videos:/videos"
+      - "/data/pictures/phone:/phone"
+      ports:
+      - '32400:32400'
